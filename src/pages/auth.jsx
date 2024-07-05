@@ -37,14 +37,14 @@ const Authentication = ({ setIsAuthenticated }, { setUser }) => {
 		setPassword(event.target.value);
 	};
 
-	const submitLoginForm = event => {
+	const submitLoginForm = async event => {
 		if (username != null && password != null) {
 			setLoading(true);
 			const formData = {
 				username,
 				password
 			};
-			axios
+await result = axios
 				.post(`${serverURL}/signin`, formData)
 				.then(response => {
 				   setIsAuthenticated(true)
