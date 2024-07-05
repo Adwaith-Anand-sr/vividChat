@@ -83,12 +83,8 @@ io.on("connection", socket => {
 	});
 });
 
-app.get("/", async (req, res) => {
-	console.log(users);
-});
 
 app.post("/signup", async (req, res) => {
-	console.log("signuping....");
 	let { password, username, fullname, email } = req.body;
 	let existUser = await userModel.findOne({ username });
 	if (existUser) {
@@ -178,7 +174,6 @@ app.post("/getRecentUsers", async (req, res) => {
 		if (user.recent && user.recent.length > 0) {
 			for (let item of user.recent) {
 				let usr = await userModel.findOne({ _id: item });
-				console.log(usr);
 				users.push(usr);
 			}
 		}

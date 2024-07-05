@@ -17,6 +17,11 @@ const Home = () => {
 	let fetchNotification = () => {
 		navigate("/notification");
 	};
+	
+	const handleOpenChat = id => {
+		navigate(`/chat/${id}`)
+	};
+	
 
 	const [allUsers, setAllUsers] = useState([]);
 	
@@ -33,13 +38,14 @@ const Home = () => {
 	}, []);
 
 	return (
-		<div style={{height= '100%', overflow: 'hidden'}}>
+		<div style={{height: '100%', overflow: 'hidden'}}>
 		
          <HomeNav />
 			<div className="w-full bg-zinc-950 text-white min-h-[90vh] mt-[7vh] flex flex-col overflow-x-hidden overflow-y-auto">
 				{allUsers.map(user => (
 					<div
 						key={ user._id }
+						onClick={() => handleOpenChat(user._id)}
 						className="w-full px-[2vw] h-[8vh] flex items-center text-white overflow-hidden">
 						<img
 							src={ avatar }
