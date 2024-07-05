@@ -55,7 +55,7 @@ const Authentication = ({ setIsAuthenticated }, { setUser }) => {
 					console.log("Server response:", response.data);
 				})
 				.catch(error => {
-				  alert(error)
+				  alert(error.response.data)
 					setLoginError(error.response.data.message);
 					setLoading(false);
 					console.error("Error:", error);
