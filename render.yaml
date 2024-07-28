@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: vite-app
+    env: static
+    staticPublishPath: dist
+    
