@@ -22,7 +22,7 @@ export default function TabLayout() {
 				options={{
 					title: "Chats",
 					tabBarIcon: ({ color }) => (
-						<View className="flex items-center justify-center gap-1">
+						<View className="flex justify-center items-center gap-1">
 							<FontAwesome6 size={22} name="comment" color={color} />
 							<Text style={{color}} >{'Chats'}</Text>
 						</View>

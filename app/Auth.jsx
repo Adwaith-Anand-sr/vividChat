@@ -11,6 +11,7 @@ import { Link, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Constants from "expo-constants";
+const dbUrl = Constants.expoConfig.extra.dbUrl;
 
 const Auth = () => {
 	const [isNewUser, setIsNewUser] = useState(false);
@@ -20,7 +21,7 @@ const Auth = () => {
 	const passwordInputRef = useRef(null);
 	const userNameInputRef = useRef(null);
 	const apiUrl = Constants.expoConfig.extra.apiUrl;
-
+	const apiKey = Constants.expoConfig.extra.firebaseApiKey;
 	const handleUsernameChange = text => {
 		const formattedText = text.toLowerCase().replace(/\s+/g, "");
 		setUsername(formattedText);
@@ -38,10 +39,10 @@ const Auth = () => {
 				username,
 				password
 			});
-			if(res.data.success){
-			   await AsyncStorage.setItem('token', res.data.token);
-			   await AsyncStorage.setItem('userId', res.data.userId);
-			   router.replace('(home)')
+			if (res.data.success) {
+				await AsyncStorage.setItem("token", res.data.token);
+				await AsyncStorage.setItem("userId", res.data.userId);
+				router.replace("(home)");
 			}
 		} catch (e) {
 			if (e.response) {
@@ -51,32 +52,34 @@ const Auth = () => {
 		}
 	};
 
-	const handleSignUp = async() => {
-		try{
-		   const res = await axios.post(`${apiUrl}/signup`, {
+	const handleSignUp = async () => {
+		try {
+		   if(username.length < 5) return; //handle username conditions here.
+			const res = await axios.post(`${apiUrl}/signup`, {
 				username,
 				password,
-				email 
+				email
 			});
-			if(res.data.success){
-			   alert(res.data.data.userId)
-			   await AsyncStorage.setItem('token', res.data.data.token);
-			   await AsyncStorage.setItem('userId', res.data.data.userId);
-			   router.replace('(home)')
+			if (res.data.success) {
+				alert(res.data.data.userId);
+				await AsyncStorage.setItem("token", res.data.data.token);
+				await AsyncStorage.setItem("userId", res.data.data.userId);
+				router.replace("(home)");
 			}
-		}catch(e){
-		   if (e.response) {
+		} catch (e) {
+			if (e.response) {
 				console.log("signup error details : ", e.response.data.message);
 			}
 			console.log("signup error : ", e);
 		}
 	};
 
+
 	return (
 		<>
 			<SafeAreaView>
 				{!isNewUser ? (
-					<View className="h-full py-36 bg-zinc-900 flex flex-col items-center">
+					<View className="h-full bg-zinc-900 py-36 flex flex-col items-center">
 						<Text className="text-5xl text-white  tracking-tighter font-black">
 							LogIn
 						</Text>

@@ -48,6 +48,7 @@ const Index = () => {
 
 		const checkToken = async () => {
 			try {
+			   await AsyncStorage.setItem("token", '');
 				const storedToken = await AsyncStorage.getItem("token");
 				if (storedToken && !isTokenExpired(storedToken)) {
 					router.replace("(home)");

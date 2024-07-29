@@ -41,7 +41,7 @@ const Chats = () => {
 					barStyle="light-content"
 					backgroundColor="rgb(24, 24, 27)"
 				/>
-				<View className="bg-zinc-950 h-full">
+				<View className="h-full bg-zinc-950 ">
 					<View className="bg-zinc-950 my-5 ml-3">
 						<Text className="text-3xl text-white font-black tracking-tighter">
 							vividChat

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
 	View,
 	Text,
@@ -16,15 +16,16 @@ import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import Constants from "expo-constants";
 import TextArea from "../../components/TextArea.jsx";
+import Constants from "expo-constants";
 const apiUrl = Constants.expoConfig.extra.apiUrl;
 const socketUrl = Constants.expoConfig.extra.socketUrl;
+const dbUrl = Constants.expoConfig.extra.dbUrl;
+const apiKey = Constants.expoConfig.extra.firebaseApiKey;
 
 import io from "socket.io-client";
 
 const socket = io(`${socketUrl}`);
-
 const Chat = () => {
 	const route = useRoute();
 	const { chat } = route.params;
@@ -72,6 +73,7 @@ const Chat = () => {
 		};
 	}, [socket]);
 
+
 	const handleSendMessage = async () => {
 		const userId = await AsyncStorage.getItem("userId");
 		const dets = {
@@ -117,7 +119,7 @@ const Chat = () => {
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 				keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}>
 				<View style={{ flex: 1 }}>
-					<View className="bg-neutral-900 px-3 flex-row items-center h-[8vh]">
+					<View className="flex-row bg-neutral-900 px-3 items-center h-[8vh]">
 						<TouchableOpacity onPress={() => router.back()}>
 							<AntDesign name="left" color="white" size={20} />
 						</TouchableOpacity>

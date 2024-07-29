@@ -5,7 +5,7 @@
       "version": "1.0.0",
       "orientation": "portrait",
       "icon": "./assets/images/icon.png",
-      "scheme": "vividChat",
+      "scheme": "myapp",
       "userInterfaceStyle": "automatic",
       "splash": {
          "image": "./assets/images/splash.png",
@@ -16,7 +16,6 @@
          "supportsTablet": true
       },
       "android": {
-         "package": "com.vivid.vividchat",
          "adaptiveIcon": {
             "foregroundImage": "./assets/images/adaptive-icon.png",
             "backgroundColor": "#ffffff"
@@ -36,7 +35,9 @@
       "extra": {
          "apiUrl": "https://vividchatserver.onrender.com",
          "socketUrl": "http://localhost:3000",
-         "str": "https://vividchatserver.onrender.com"
+         "str": "https://vividchatserver.onrender.com",
+         "firebaseApiKey": "AIzaSyDOVesBIuc_44_tszfEVnO26hgaNLPdao8",
+         "dbUrl": "https://vividchatdatabase-default-rtdb.firebaseio.com",
       },
    }
 }

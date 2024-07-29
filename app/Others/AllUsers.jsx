@@ -40,7 +40,7 @@ const AllUsers = () => {
 	return (
 		<SafeAreaView style={{ backgroundColor: "black" }}>
 			<StatusBar style="light" backgroundColor="black" />
-			<View className="bg-zinc-950 h-full">
+			<View className="h-full bg-zinc-950 ">
 				<View className="bg-zinc-950">
 					<Text className="text-white text-2xl my-3 mx-3">AllUsers</Text>
 				</View>
