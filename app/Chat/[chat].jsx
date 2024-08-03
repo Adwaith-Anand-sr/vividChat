@@ -17,8 +17,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import TextArea from "../../components/TextArea.jsx";
-import LottieView from 'lottie-react-native';
-
+import LottieView from "lottie-react-native";
 
 const apiUrl = Constants.expoConfig.extra.apiUrl;
 const dbUrl = Constants.expoConfig.extra.dbUrl;
@@ -111,7 +110,7 @@ const Chat = () => {
 	const handleScrollToEnd = () => {
 		scrollViewRef.current.scrollToEnd({ animated: true });
 	};
-
+	const name = null;
 	const formatTime = timestamp => {
 		const date = new Date(timestamp);
 		let hours = date.getHours();
@@ -142,13 +141,23 @@ const Chat = () => {
 								contentFit="cover"
 							/>
 						</View>
-						<Text className="text-white text-2xl font-black tracking-tighter">
-							{chatPartner?.username ? (
-								chatPartner.username
-							) : (
-								<ActivityIndicator size="large" color="#ffffff" />
-							)}
-						</Text>
+						{chatPartner?.username ? (
+							<Text className="text-white text-2xl font-black tracking-tighter">
+								{chatPartner.username}
+							</Text>
+						) : (
+							<View className="flex -ml-4 justify-center h-full">
+								<LottieView
+									source={require("../../assets/animations/animation2.json")}
+									autoPlay
+									style={{
+									   width: 120,
+									   height: 120,
+									}}
+									loop
+								/>
+							</View>
+						)}
 					</View>
 					<ScrollView
 						style={{ flex: 1 }}
