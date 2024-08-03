@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
 		paddingLeft: 15,
 		borderWidth: 1,
 		backgroundColor: "#2c2c2c",
+		lineHeight:25,
 		borderRadius: 18,
 		color: 'white',
 		fontSize: 15

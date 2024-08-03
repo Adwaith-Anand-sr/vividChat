@@ -1,13 +1,13 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
 	View,
 	Text,
 	ScrollView,
 	StatusBar,
-	TextInput,
 	TouchableOpacity,
 	KeyboardAvoidingView,
-	Platform
+	Platform,
+	ActivityIndicator
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,100 +15,112 @@ import { Image } from "expo-image";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import TextArea from "../../components/TextArea.jsx";
 import Constants from "expo-constants";
+import TextArea from "../../components/TextArea.jsx";
+import LottieView from 'lottie-react-native';
+
+
 const apiUrl = Constants.expoConfig.extra.apiUrl;
-const socketUrl = Constants.expoConfig.extra.socketUrl;
 const dbUrl = Constants.expoConfig.extra.dbUrl;
-const apiKey = Constants.expoConfig.extra.firebaseApiKey;
 
-import io from "socket.io-client";
+import sendMessage from "../../utils/sendMessage.js";
+import getChatMessages from "../../utils/getChatMessages.js";
+import generateChatId from "../../utils/generateChatId.js";
+import getAllUsers from "../../utils/getAllUsers.js";
 
-const socket = io(`${socketUrl}`);
 const Chat = () => {
 	const route = useRoute();
 	const { chat } = route.params;
 	const chatPartnerId = chat;
+	const [userId, setUserId] = useState(null);
 	const [chatPartner, setChatPartner] = useState(null);
-
 	const [message, setMessage] = useState("");
-	const [numberOfLines, setNumberOfLines] = useState(3);
+	const [messages, setMessages] = useState([]);
 	const scrollViewRef = useRef(null);
-	const msg = [
-		1, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
-		36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 0
-	];
+	const messagesMap = useRef(new Map()); // Map to track messages by ID
 
 	useEffect(() => {
 		const fetchPartner = async () => {
-			try {
-				const res = await axios.post(`${apiUrl}/getUser`, {
-					chatPartnerId
-				});
-				if (res.data.success) setChatPartner(res.data.user);
-				else alert("error fetching user!");
-			} catch (err) {
-				console.log("fetchPartner error: ", err);
-			}
+			const users = await getAllUsers();
+			const dets = users ? users[chatPartnerId] : null;
+			setChatPartner(dets);
+			const storedUserId = await AsyncStorage.getItem("userId");
+			setUserId(storedUserId);
 		};
 		fetchPartner();
-	}, []); //fetch partner;
+	}, []);
 
 	useEffect(() => {
-		const handleConnect = () => {
-			alert("Connected to server");
-		};
+		if (userId && chatPartnerId) {
+			const chatId = generateChatId([userId, chatPartnerId].sort());
+			const fetchMessages = async () => {
+				const fetchedMessages = await getChatMessages(chatId);
+				if (fetchedMessages) {
+					const messagesArray = Object.keys(fetchedMessages).map(key => ({
+						...fetchedMessages[key],
+						id: key // Assuming each message has a unique key in the fetched data
+					}));
 
-		const handleRecieveMessage = dets => {
-			console.log(dets);
-			alert("recieve message");
-		};
+					setMessages(prevMessages => {
+						messagesArray.forEach(msg => {
+							if (!messagesMap.current.has(msg.id)) {
+								messagesMap.current.set(msg.id, msg);
+							}
+						});
 
-		socket.on("connect", handleConnect);
-		socket.on("receiveMessage", handleRecieveMessage);
-		return () => {
-			socket.off("connect", handleConnect);
-			socket.off("receiveMessage", handleRecieveMessage);
-		};
-	}, [socket]);
-
+						const uniqueMessages = Array.from(
+							messagesMap.current.values()
+						);
+						return uniqueMessages;
+					});
+				}
+			};
+			fetchMessages();
+			if (userId !== chatPartnerId) {
+				const intervalId = setInterval(fetchMessages, 1000);
+				return () => clearInterval(intervalId);
+			}
+		}
+	}, [userId, chatPartnerId]);
 
 	const handleSendMessage = async () => {
-		const userId = await AsyncStorage.getItem("userId");
-		const dets = {
-			senderId: userId,
-			receiverId: chatPartner._id,
-			message
-		};
-		setMessage(null);
-		socket.emit("sendMessage", dets, response => {
-			if (response.status === "ok") {
-				console.log("Message sent successfully:", response.data);
+		if (message.trim() === "") return;
+		try {
+			const userId = await AsyncStorage.getItem("userId");
+			if (userId) {
+				const participants = {
+					sender: userId,
+					receiver: chatPartnerId
+				};
+				const newMessage = {
+					message,
+					sender: userId,
+					timestamp: Date.now(),
+					id: `${userId}_${Date.now()}` // Unique ID for each message
+				};
+				await sendMessage(participants, message);
+				setMessage("");
 			} else {
-				console.error("Error sending message:", response);
+				console.error("User ID is not available.");
 			}
-		});
-	};
-
-	const handleMessageChange = msg => {
-		setMessage(msg);
-	};
-
-	const handleContentSizeChange = e => {
-		const contentHeight = e.nativeEvent.contentSize.height;
-		console.log(e.nativeEvent.contentSize);
-		const lineHeight = 24; // adjust according to your font size
-		const maxLines = 4;
-		const newNumberOfLines = Math.max(
-			Math.ceil(contentHeight / lineHeight),
-			maxLines
-		);
-		setNumberOfLines(newNumberOfLines);
+		} catch (error) {
+			console.error("Error sending message:", error);
+		}
 	};
 
 	const handleScrollToEnd = () => {
 		scrollViewRef.current.scrollToEnd({ animated: true });
+	};
+
+	const formatTime = timestamp => {
+		const date = new Date(timestamp);
+		let hours = date.getHours();
+		const minutes = date.getMinutes().toString().padStart(2, "0");
+		const ampm = hours >= 12 ? "PM" : "AM";
+		hours = hours % 12;
+		hours = hours ? hours : 12; // the hour '0' should be '12'
+		hours = hours.toString().padStart(2, "0");
+		return `${hours}:${minutes} ${ampm}`;
 	};
 
 	return (
@@ -131,7 +143,11 @@ const Chat = () => {
 							/>
 						</View>
 						<Text className="text-white text-2xl font-black tracking-tighter">
-							{chatPartner?.username}
+							{chatPartner?.username ? (
+								chatPartner.username
+							) : (
+								<ActivityIndicator size="large" color="#ffffff" />
+							)}
 						</Text>
 					</View>
 					<ScrollView
@@ -140,9 +156,37 @@ const Chat = () => {
 						ref={scrollViewRef}
 						onContentSizeChange={handleScrollToEnd}>
 						<View>
-							{msg.map((item, i) => (
-								<View key={i} className="h-[5vh] w-full">
-									<Text className="text-white text-3xl">{item}</Text>
+							{messages.map(item => (
+								<View key={item.id} className="py-2">
+									<View
+										style={[
+											{
+												alignSelf:
+													item.sender === userId
+														? "flex-end"
+														: "flex-start"
+											}
+										]}
+										className="relative bg-zinc-900 py-1 max-w-[85%] min-w-[35%] px-4 pb-6 rounded-lg w-auto flex">
+										<Text className="text-white text-xl">
+											{item.message}
+										</Text>
+										<Text
+											className="text-white text-[3vw] absolute bottom-1 text-zinc-400"
+											style={[
+												{
+													position: "absolute",
+													[item.sender === userId
+														? "right"
+														: "left"]: 0,
+													[item.sender !== userId
+														? "left"
+														: "right"]: 8
+												}
+											]}>
+											{formatTime(item.timestamp)}
+										</Text>
+									</View>
 								</View>
 							))}
 						</View>

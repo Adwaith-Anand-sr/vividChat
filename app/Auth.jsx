@@ -13,15 +13,21 @@ import axios from "axios";
 import Constants from "expo-constants";
 const dbUrl = Constants.expoConfig.extra.dbUrl;
 
+import handleSignup from "../utils/authentication/handleSignup.js";
+import handleLogin from "../utils/authentication/handleLogin.js";
+import isTokenExpired from "../utils/authentication/isTokenExpired.js";
+import checkUsernameExists from "../utils/authentication/checkUsernameExists.js";
+
 const Auth = () => {
 	const [isNewUser, setIsNewUser] = useState(false);
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [email, setEmail] = useState("");
+	const [statusMessage, setStatusMessage] = useState(null);
 	const passwordInputRef = useRef(null);
 	const userNameInputRef = useRef(null);
 	const apiUrl = Constants.expoConfig.extra.apiUrl;
-	const apiKey = Constants.expoConfig.extra.firebaseApiKey;
+
 	const handleUsernameChange = text => {
 		const formattedText = text.toLowerCase().replace(/\s+/g, "");
 		setUsername(formattedText);
@@ -33,47 +39,54 @@ const Auth = () => {
 		setEmail(email);
 	};
 
-	const handleLogin = async () => {
-		try {
-			const res = await axios.post(`${apiUrl}/signin`, {
-				username,
-				password
-			});
-			if (res.data.success) {
-				await AsyncStorage.setItem("token", res.data.token);
-				await AsyncStorage.setItem("userId", res.data.userId);
-				router.replace("(home)");
-			}
-		} catch (e) {
-			if (e.response) {
-				console.log("login error details : ", e.response.data.message);
-			}
-			console.log("login error : ", e);
+	const handleLoginSubmit = async e => {
+		e.preventDefault();
+		setStatusMessage(<Text className="text-yellow-500">please wait..</Text>);
+		if (!email.trim() || !password.trim()) {
+			setStatusMessage(
+				<Text className="text-red-500">All fields are required!</Text>
+			);
+			return;
 		}
+		const res = await handleLogin(email, password);
+		if (res === true) {
+			setStatusMessage(
+				<Text className="text-green-500">User signed in successfully.</Text>
+			);
+			router.replace("(home)");
+		} else if (res === "INVALID_LOGIN_CREDENTIALS")
+			setStatusMessage(
+				<Text className="text-red-500">Invalid email or password!</Text>
+			);
+		else setStatusMessage(<Text className="text-red-500">{res}</Text>);
 	};
-
-	const handleSignUp = async () => {
-		try {
-		   if(username.length < 5) return; //handle username conditions here.
-			const res = await axios.post(`${apiUrl}/signup`, {
-				username,
-				password,
-				email
-			});
-			if (res.data.success) {
-				alert(res.data.data.userId);
-				await AsyncStorage.setItem("token", res.data.data.token);
-				await AsyncStorage.setItem("userId", res.data.data.userId);
-				router.replace("(home)");
-			}
-		} catch (e) {
-			if (e.response) {
-				console.log("signup error details : ", e.response.data.message);
-			}
-			console.log("signup error : ", e);
+	const handleSignupSubmit = async e => {
+		e.preventDefault();
+		setStatusMessage(<Text className="text-yellow-500">please wait..</Text>);
+		if (!username.trim() || !email.trim() || !password.trim()) {
+			setStatusMessage(
+				<Text className="text-red-500">All fields are required!</Text>
+			);
+			return;
 		}
+		if (await checkUsernameExists(username)) {
+			setStatusMessage(
+				<Text className="text-red-500">Username already exists!</Text>
+			);
+			return;
+		}
+		const res = await handleSignup(username, email, password);
+		if (res === true) {
+			setStatusMessage(
+				<Text className="text-green-500">User signed up successfully!</Text>
+			);
+			router.replace("(home)");
+		} else if (res === "EMAIL_EXISTS")
+			setStatusMessage(
+				<Text className="text-red-500">email already exists!</Text>
+			);
+		else setStatusMessage(<Text className="text-red-500">{res}</Text>);
 	};
-
 
 	return (
 		<>
@@ -92,9 +105,11 @@ const Auth = () => {
 							returnKeyType="next"
 							placeholderTextColor="rgb(126,120,120)"
 							onSubmitEditing={() => passwordInputRef.current.focus()}
-							value={username}
-							onChangeText={handleUsernameChange}
-							placeholder="username"
+							value={email}
+							onChangeText={handleEmailChange}
+							inputMode="email"
+							keyboardType="email-address"
+							placeholder="email"
 							className="text-white tracking-tighter text-[4vw] border border-white mt-10 pl-4 w-[80%] h-[6.5vh] rounded-lg"
 						/>
 
@@ -106,15 +121,16 @@ const Auth = () => {
 							autoCapitalize="none"
 							cursorColor="white"
 							returnKeyType="done"
-							onSubmitEditing={handleLogin}
+							onSubmitEditing={handleLoginSubmit}
 							value={password}
 							onChangeText={handlePasswordChange}
 							placeholder="password"
 							className="text-white tracking-tighter text-[4vw] border border-white mt-5 pl-4 w-[80%] h-[6.5vh] rounded-lg"
 						/>
+						<Text className="text-white pt-3">{statusMessage}</Text>
 
 						<TouchableOpacity
-							onPress={handleLogin}
+							onPress={handleLoginSubmit}
 							className="w-[58%] rounded-lg flex items-center py-[0.8vh] mt-8 bg-green-400">
 							<Text className="text-[6.5vw] font-black tracking-tighter ">
 								LogIn
@@ -128,6 +144,7 @@ const Auth = () => {
 							<Pressable
 								onPress={() => {
 									setIsNewUser(true);
+									setStatusMessage('')
 								}}>
 								<Text className="text-white text-[3.85vw] tracking-tighter font-black ml-1">
 									SignUp.
@@ -150,9 +167,9 @@ const Auth = () => {
 							placeholderTextColor="rgb(126,120,120)"
 							onSubmitEditing={() => userNameInputRef.current.focus()}
 							placeholder="email"
-							inputMode="email"
 							value={email}
 							onChangeText={handleEmailChange}
+							inputMode="email"
 							keyboardType="email-address"
 							className="text-white tracking-tighter text-[4vw] border border-white mt-10 pl-4 w-[80%] h-[6.5vh] rounded-lg"
 						/>
@@ -182,16 +199,16 @@ const Auth = () => {
 							autoCapitalize="none"
 							cursorColor="white"
 							returnKeyType="done"
-							onSubmitEditing={handleSignUp}
+							onSubmitEditing={handleSignupSubmit}
 							value={password}
 							onChangeText={handlePasswordChange}
 							placeholder="password"
 							className="text-white tracking-tighter text-[4vw] border border-white mt-5 pl-4 w-[80%] h-[6.5vh] rounded-lg"
 						/>
-
+						<Text className="text-white pt-3">{statusMessage}</Text>
 						<TouchableOpacity
-							onPress={handleSignUp}
-							className="w-[58%] rounded-lg flex items-center py-[0.8vh] mt-8 bg-green-400">
+							onPress={handleSignupSubmit}
+							className="w-[58%] rounded-lg flex items-center py-[0.8vh] mt-6 bg-green-400">
 							<Text className="text-[6.5vw] font-black tracking-tighter ">
 								SignUp
 							</Text>
@@ -204,6 +221,7 @@ const Auth = () => {
 							<Pressable
 								onPress={() => {
 									setIsNewUser(false);
+									setStatusMessage('')
 								}}>
 								<Text className="text-white text-[3.8vw] tracking-tighter font-black ml-1">
 									LogIn.

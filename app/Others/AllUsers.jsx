@@ -9,33 +9,34 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import Constants from "expo-constants";
-const apiUrl = Constants.expoConfig.extra.apiUrl;
+
 import { router } from "expo-router";
 
-const AllUsers = () => {
-	const [allUsers, setAllUsers] = useState();
+import getAllUsers from "../../utils/getAllUsers.js";
 
-	const fetchAllUsers = async () => {
+const AllUsers = () => {
+	const [allUsers, setAllUsers] = useState([]);
+
+	useEffect(() => {
+	   const fetchAllUsers = async ()=>{
+		   const users = await getAllUsers()
+		   const usersArray = Object.entries(users).map(([id, dets])=>({
+			   id,
+			   ...dets
+			})) 
+			if(usersArray && usersArray.length > 0) setAllUsers(usersArray)
+	   }
+	   fetchAllUsers()
+	}, []);
+
+	const handleOpenChat = id => {
 		try {
-			const res = await axios.get(`${apiUrl}/getAllUsers`);
-			if (res.data.success && res.data.users) setAllUsers(res.data.users);
+			router.replace(`Chat/${id}`);
 		} catch (e) {
-			console.log("fetch users error: ", e);
+			console.log("fetch chat error: ", e);
 		}
 	};
-	fetchAllUsers();
-	
-	const handleOpenChat = (id) => {
-		try {
-		   router.replace(`Chat/${id}`)
-		} catch (e) {
-			console.log("fetch users error: ", e);
-		}
-	};
-	
 
 	return (
 		<SafeAreaView style={{ backgroundColor: "black" }}>
@@ -49,10 +50,12 @@ const AllUsers = () => {
 					style={{ flex: 1 }}
 					contentContainerStyle={{ paddingBottom: 20 }}>
 					<View className="bg-zinc-950">
-						{allUsers?.map((user, i) => (
-							<TouchableOpacity key={user._id} onPress={()=> handleOpenChat(user._id) }>
+						{allUsers.map((user, i) => (
+							<TouchableOpacity
+								key={user.id}
+								onPress={() => handleOpenChat(user.id)}>
 								<View
-									key={user._id}
+									key={user.id}
 									className="bg-zinc-950 flex-row items-center h-[8.5vh]">
 									<View className="w-[5vh] h-[5vh] mx-3 rounded-full overflow-hidden">
 										<Image

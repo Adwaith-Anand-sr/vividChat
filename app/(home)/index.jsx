@@ -15,23 +15,34 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Constants from "expo-constants";
 const apiUrl = Constants.expoConfig.extra.apiUrl;
+const dbUrl = Constants.expoConfig.extra.dbUrl;
+
+import deleteChat from "../../utils/deleteChat.js";
+import getUserChats from "../../utils/getUserChats.js";
+import findUser from "../../utils/findUser.js";
 
 const Chats = () => {
-	const [recentUsers, setRecentUsers] = useState(null);
+	const [chats, setChats] = useState([]);
+   const [user, setUser] = useState(null) //username
 	useEffect(() => {
-		const fetchRecentUsers = async () => {
+		const fetchChats = async () => {
 			try {
-				const userId = await AsyncStorage.getItem("userId");
-				const res = await axios.post(`${apiUrl}/getRecentUsers`, {
-					userId
-				});
-				if (res.data.success) setRecentUsers(res.data.users);
-				else alert("error fetching user!");
-			} catch (err) {
-				console.log("fetchPartner error: ", err);
+			   setUser(await AsyncStorage.getItem('userId'));
+				let userId = await AsyncStorage.getItem("userId");
+				let token = await AsyncStorage.getItem("idToken");
+				if (userId && token) {
+					let chats = await getUserChats(userId);
+					setChats(chats);
+				}
+			} catch (error) {
+				console.error("Error fetching chat messages:", error);
+				return null;
 			}
 		};
-		fetchRecentUsers();
+		fetchChats();
+		const intervalId = setInterval(fetchChats, 1000);
+	   return () => clearInterval(intervalId);
+
 	}, []);
 
 	return (
@@ -51,36 +62,47 @@ const Chats = () => {
 						style={{ flex: 1 }}
 						contentContainerStyle={{ paddingBottom: 20 }}>
 						<View className="bg-zinc-950">
-							{recentUsers?.length >0 ? (
+							{chats?.length > 0 ? (
 								<>
-									{recentUsers.map((user, i) => (
-									   <TouchableOpacity key={user._id} onPress={()=> router.push(`Chat/${user._id}`)}>
-										<View
-											key={user._id}
-											className="bg-zinc-950 flex-row items-center h-[8.5vh]">
-											<View className="w-[5vh] h-[5vh] mx-3 rounded-full overflow-hidden">
-												<Image
-													style={{ width: "100%", height: "100%" }}
-													source={require("../../assets/images/man-is-standing-front-computer-screen-with-man-purple-shirt_1108514-60863.jpg")}
-													contentFit="cover"
-												/>
+									{chats.map((item, i) => (
+										<TouchableOpacity
+											key={( item[1].users.user1.userId === user ) ? item[1].users.user2.userId : item[1].users.user1.userId}
+											onPress={() =>
+												router.push(`Chat/${( item[1].users.user1.userId === user ) ? item[1].users.user2.userId : item[1].users.user1.userId}`)
+											}>
+											<View
+												key={( item[1].users.user1.userId === user ) ? item[1].users.user2.userId : item[1].users.user1.userId}
+												className="bg-zinc-950 flex-row items-center h-[8.5vh]">
+												<View className="w-[5vh] h-[5vh] mx-3 rounded-full overflow-hidden">
+													<Image
+														style={{
+															width: "100%",
+															height: "100%"
+														}}
+														source={require("../../assets/images/man-is-standing-front-computer-screen-with-man-purple-shirt_1108514-60863.jpg")}
+														contentFit="cover"
+													/>
+												</View>
+												<View className="flex justify-start gap-1">
+													<Text className="text-white font-black text-[4.85vw] tracking-tighter">
+														{( item[1].users.user1.userId === user ) ? item[1].users.user2.username : item[1].users.user1.username}
+													</Text>
+													<Text className="text-zinc-300 text-[3vw]">
+														last Message received/sent displays
+														here...
+													</Text>
+												</View>
 											</View>
-											<View className="flex justify-start gap-1">
-												<Text className="text-white font-black text-[4.85vw] tracking-tighter">
-													{user.username}
-												</Text>
-												<Text className="text-zinc-300 text-[3vw]">
-													last Message received/sent displays
-													here...
-												</Text>
-											</View>
-										</View>
 										</TouchableOpacity>
 									))}
 								</>
 							) : (
-							   <>
-								<Text className='text-white pl-5'>you haven no recent users yet.</Text>
+								<>
+									<View className="flex justify-center items-center h-[60vh]">
+										<Text className="text-zinc-300">
+											you haven no chats yet.
+										</Text>
+									</View>
 								</>
 							)}
 						</View>

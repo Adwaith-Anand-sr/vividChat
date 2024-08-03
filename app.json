@@ -34,10 +34,8 @@
       },
       "extra": {
          "apiUrl": "https://vividchatserver.onrender.com",
-         "socketUrl": "http://localhost:3000",
-         "str": "https://vividchatserver.onrender.com",
-         "firebaseApiKey": "AIzaSyDOVesBIuc_44_tszfEVnO26hgaNLPdao8",
-         "dbUrl": "https://vividchatdatabase-default-rtdb.firebaseio.com",
+         "apiKey": "AIzaSyCpnv2wJbr2zLvmat7UgWh0l6yitU9LX6w",
+         "dbUrl": "https://vividchatapp-default-rtdb.firebaseio.com",
       },
    }
 }
