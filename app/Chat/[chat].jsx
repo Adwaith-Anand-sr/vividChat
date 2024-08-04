@@ -84,6 +84,8 @@ const Chat = () => {
 
 	const handleSendMessage = async () => {
 		if (message.trim() === "") return;
+		const msg = message ;
+		setMessage("");
 		try {
 			const userId = await AsyncStorage.getItem("userId");
 			if (userId) {
@@ -91,14 +93,7 @@ const Chat = () => {
 					sender: userId,
 					receiver: chatPartnerId
 				};
-				const newMessage = {
-					message,
-					sender: userId,
-					timestamp: Date.now(),
-					id: `${userId}_${Date.now()}` // Unique ID for each message
-				};
-				await sendMessage(participants, message);
-				setMessage("");
+				await sendMessage(participants, msg);
 			} else {
 				console.error("User ID is not available.");
 			}
@@ -148,7 +143,7 @@ const Chat = () => {
 						) : (
 							<View className="flex -ml-4 justify-center h-full">
 								<LottieView
-									source={require("../../assets/animations/animation2.json")}
+									source={require("../../assets/animations/usernameLoadAnim.json")}
 									autoPlay
 									style={{
 									   width: 120,
@@ -176,23 +171,13 @@ const Chat = () => {
 														: "flex-start"
 											}
 										]}
-										className="relative bg-zinc-900 py-1 max-w-[85%] min-w-[35%] px-4 pb-6 rounded-lg w-auto flex">
-										<Text className="text-white text-xl">
+										className="relative bg-zinc-900 py-1 max-w-[85%] min-w-[25%] px-4 pb-5 rounded-lg w-auto flex">
+										<Text 
+											className="text-white font-normal text-[3.85vw]">
 											{item.message}
 										</Text>
 										<Text
-											className="text-white text-[3vw] absolute bottom-1 text-zinc-400"
-											style={[
-												{
-													position: "absolute",
-													[item.sender === userId
-														? "right"
-														: "left"]: 0,
-													[item.sender !== userId
-														? "left"
-														: "right"]: 8
-												}
-											]}>
+											className="absolute right-0 mr-2 text-white font-semibold text-[2.5vw] bottom-1 text-zinc-500">
 											{formatTime(item.timestamp)}
 										</Text>
 									</View>

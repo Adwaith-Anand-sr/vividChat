@@ -1,18 +1,21 @@
 import axios from "axios";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+
 const dbUrl = Constants.expoConfig.extra.dbUrl;
 
 import generateChatId from "./generateChatId";
 import findUser from "./findUser.js";
 
 const sendMessage = async (participants, message) => {
-	if (participants && participants.sender && participants.receiver) {
-		try {
-			const token = await AsyncStorage.getItem("idToken");
+	try {
+		if (participants && participants.sender && participants.receiver) {
 			const chatId = await generateChatId(
 				[participants.sender, participants.receiver].sort()
 			);
+			const token = await AsyncStorage.getItem("idToken");
+			if (!token) router.push("Auth");
 			const chatExistsResponse = await axios.get(
 				`${dbUrl}/chats/${chatId}.json?auth=${token}`
 			);
@@ -46,12 +49,11 @@ const sendMessage = async (participants, message) => {
 					timestamp: new Date().toISOString()
 				}
 			);
-			console.log("Message sent successfully");
-		} catch (error) {
-			console.error("Error sending message:", error);
+		} else {
+			console.error("Error: Invalid participants object");
 		}
-	} else {
-		console.error("Error: Invalid participants object");
+	} catch (error) {
+		console.error("Error sending message:", error);
 	}
 };
 

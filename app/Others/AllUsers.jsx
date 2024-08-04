@@ -10,24 +10,24 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import axios from "axios";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
 import { router } from "expo-router";
 
 import getAllUsers from "../../utils/getAllUsers.js";
 
 const AllUsers = () => {
 	const [allUsers, setAllUsers] = useState([]);
-
 	useEffect(() => {
-	   const fetchAllUsers = async ()=>{
-		   const users = await getAllUsers()
-		   const usersArray = Object.entries(users).map(([id, dets])=>({
-			   id,
-			   ...dets
-			})) 
-			if(usersArray && usersArray.length > 0) setAllUsers(usersArray)
-	   }
-	   fetchAllUsers()
+		const fetchAllUsers = async () => {
+			const users = await getAllUsers();
+			const usersArray = Object.entries(users).map(([id, dets]) => ({
+				id,
+				...dets
+			}));
+			if (usersArray && usersArray.length > 0) setAllUsers(usersArray);
+		};
+		fetchAllUsers();
 	}, []);
 
 	const handleOpenChat = id => {

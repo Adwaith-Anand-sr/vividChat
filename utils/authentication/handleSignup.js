@@ -22,6 +22,23 @@ const handleSignup = async (username, email, password) => {
 			username,
 			email
 		});
+		
+		const userResponse = await axios.get(
+			`${dbUrl}/users.json?auth=${idToken}`
+		);
+		const usersArray = Object.entries(userResponse.data).map(
+			([id, userInfo]) => ({
+				id,
+				...userInfo
+			})
+		);
+		usersArray.map(async user => {
+			if (user.email === email) {
+				await AsyncStorage.setItem("userId", user.id);
+				await AsyncStorage.setItem("username", user.username);
+			}
+		});
+		
 		return true;
 	} catch (error) {
 		console.log(error);

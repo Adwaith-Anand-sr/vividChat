@@ -1,13 +1,17 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Updates = () => {
 	return (
 		<SafeAreaView>
-		<View>
-			<Text>Updates.</Text>
-		</View>
+			<StatusBar
+				barStyle="light-content"
+				backgroundColor="rgb(24, 24, 27)"
+			/>
+			<View className="h-full bg-zinc-950 flex justify-center items-center">
+				<Text className="text-white">Updates.</Text>
+			</View>
 		</SafeAreaView>
 	);
 };

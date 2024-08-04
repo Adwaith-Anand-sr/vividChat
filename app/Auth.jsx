@@ -4,7 +4,8 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	Pressable
+	Pressable,
+	StatusBar
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
@@ -91,6 +92,10 @@ const Auth = () => {
 	return (
 		<>
 			<SafeAreaView>
+				<StatusBar
+					barStyle="light-content"
+					backgroundColor="rgb(24, 24, 27)"
+				/>
 				{!isNewUser ? (
 					<View className="h-full bg-zinc-900 py-36 flex flex-col items-center">
 						<Text className="text-5xl text-white  tracking-tighter font-black">
@@ -144,7 +149,7 @@ const Auth = () => {
 							<Pressable
 								onPress={() => {
 									setIsNewUser(true);
-									setStatusMessage('')
+									setStatusMessage("");
 								}}>
 								<Text className="text-white text-[3.85vw] tracking-tighter font-black ml-1">
 									SignUp.
@@ -221,7 +226,7 @@ const Auth = () => {
 							<Pressable
 								onPress={() => {
 									setIsNewUser(false);
-									setStatusMessage('')
+									setStatusMessage("");
 								}}>
 								<Text className="text-white text-[3.8vw] tracking-tighter font-black ml-1">
 									LogIn.

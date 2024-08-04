@@ -10,13 +10,11 @@ const checkUsernameExists = async username => {
 		if (response.status === 200) {
 			const users = response.data;
 			if (users) {
-				console.log(users);
 				const userExists = Object.keys(users).some(
 					userId => users[userId].username === username
 				);
 				return userExists;
 			} else {
-				console.log("No users found.");
 				return false;
 			}
 		} else {
