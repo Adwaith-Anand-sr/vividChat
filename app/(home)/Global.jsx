@@ -1,19 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StatusBar } from "react-native";
+import React from "react";
+import { View, Text, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Global = () => {
 	return (
-		<SafeAreaView>
+		<SafeAreaView style={styles.safeArea}>
 			<StatusBar
 				barStyle="light-content"
 				backgroundColor="rgb(24, 24, 27)"
 			/>
-			<View className="h-full bg-zinc-950 flex justify-center items-center">
-				<Text className="text-white">Global.</Text>
+			<View style={styles.container}>
+				<Text style={styles.text}>Global.</Text>
 			</View>
 		</SafeAreaView>
 	);
 };
+
+const styles = StyleSheet.create({
+	safeArea: {
+		flex: 1,
+		backgroundColor: "rgb(24, 24, 27)"
+	},
+	container: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "rgb(24, 24, 27)"
+	},
+	text: {
+		color: "white"
+	}
+});
 
 export default Global;

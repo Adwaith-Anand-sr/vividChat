@@ -1,0 +1,28 @@
+{
+   "cli": {
+      "version": ">= 10.2.1"
+   },
+   "build": {
+      "development": {
+         "developmentClient": true,
+         "distribution": "internal",
+         "android": {
+            "buildType": "apk" // or "aab" based on your preference
+         }
+      },
+      "preview": {
+         "distribution": "internal",
+         "android": {
+            "buildType": "apk" // or "aab" based on your preference
+         }
+      },
+      "production": {
+         "android": {
+            "buildType": "apk" // Set this to "apk" if you prefer APK for production
+         }
+      }
+   },
+   "submit": {
+      "production": {}
+   }
+}
